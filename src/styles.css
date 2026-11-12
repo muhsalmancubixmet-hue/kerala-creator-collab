@@ -1,0 +1,249 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: "DM Sans", sans-serif;
+  --font-display: "Manrope", sans-serif;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-ink: var(--ink);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --shadow-elevated: var(--shadow-elevated);
+  --shadow-search: var(--shadow-search);
+}
+:root {
+  --radius: 0.75rem;
+  --background: oklch(0.992 0.004 80);
+  --foreground: oklch(0.18 0.018 265);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.018 265);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.018 265);
+  --primary: oklch(0.18 0.018 265);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.962 0.009 75);
+  --secondary-foreground: oklch(0.22 0.018 265);
+  --muted: oklch(0.95 0.008 75);
+  --muted-foreground: oklch(0.51 0.025 260);
+  --accent: oklch(0.93 0.035 25);
+  --accent-foreground: oklch(0.22 0.018 265);
+  --destructive: oklch(0.58 0.22 27);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(0.9 0.012 75);
+  --input: oklch(0.9 0.012 75);
+  --ring: oklch(0.66 0.18 28);
+  --brand: oklch(0.66 0.2 28);
+  --brand-soft: oklch(0.95 0.035 25);
+  --ink: oklch(0.16 0.018 265);
+  --success: oklch(0.48 0.11 160);
+  --success-soft: oklch(0.95 0.04 160);
+  --shadow-elevated: 0 22px 60px -28px oklch(0.2 0.02 260 / 0.3);
+  --shadow-search: 0 18px 50px -24px oklch(0.2 0.02 260 / 0.35);
+}
+* {
+  border-color: var(--color-border);
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  letter-spacing: 0;
+}
+button,
+a,
+select,
+input {
+  letter-spacing: 0;
+}
+button {
+  cursor: pointer;
+}
+svg {
+  stroke-width: 1.8;
+}
+@utility page-shell {
+  width: min(100% - 2rem, 76rem);
+  margin-inline: auto;
+}
+@utility creator-card {
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-card);
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-elevated);
+  }
+}
+@utility eyebrow {
+  margin-bottom: 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-brand);
+}
+@utility search-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  background: var(--color-background);
+  padding: 0.5rem;
+  @media (min-width: 640px) {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.8fr) auto;
+  }
+  @media (min-width: 768px) {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.8fr) minmax(0, 0.8fr) auto;
+  }
+}
+@utility search-field {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.65rem;
+  border-right: 1px solid var(--color-border);
+  padding: 0 0.7rem;
+  & > svg {
+    width: 1rem;
+    flex: none;
+    color: var(--color-brand);
+  }
+  & > span {
+    min-width: 0;
+    display: grid;
+  }
+  & small {
+    font-size: 0.64rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--color-muted-foreground);
+  }
+  & input,
+  & select {
+    min-width: 0;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    font-size: 0.82rem;
+    font-weight: 600;
+    outline: none;
+    color: var(--color-foreground);
+  }
+}
+@utility filter-label {
+  display: block;
+  margin-bottom: 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
+}
+@utility field {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 0.55rem;
+  background: var(--color-background);
+  padding: 0.7rem 0.8rem;
+  font-size: 0.85rem;
+  outline: none;
+  &:focus {
+    border-color: var(--color-brand);
+  }
+}
+@utility filter-chip {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-background);
+  padding: 0.4rem 0.65rem;
+  font-size: 0.75rem;
+  &:hover {
+    border-color: var(--color-brand);
+    color: var(--color-brand);
+  }
+}
+@utility media-tile {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: var(--color-muted);
+  &:after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, var(--color-ink), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  &:hover:after {
+    opacity: 0.55;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}
+.creator-pin span {
+  display: block;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 3px solid var(--background);
+  box-shadow: 0 4px 14px oklch(0 0 0/0.25);
+  background-size: 400% auto;
+  background-repeat: no-repeat;
+  background-color: var(--muted);
+}
+.creator-popup {
+  display: grid;
+  gap: 2px;
+  color: var(--foreground) !important;
+  text-decoration: none;
+}
+.creator-popup small {
+  color: var(--muted-foreground);
+}
+.filter-chip[data-active="true"] {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  color: var(--brand);
+}

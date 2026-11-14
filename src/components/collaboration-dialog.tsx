@@ -10,7 +10,10 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { submitCollaborationInquiry, type CollaborationInquiryPayload } from "@/services/marketplace-api";
+import {
+  submitCollaborationInquiry,
+  type CollaborationInquiryPayload,
+} from "@/services/marketplace-api";
 import type { Creator } from "@/types/marketplace";
 
 interface CollaborationDialogProps {
@@ -84,8 +87,12 @@ export function CollaborationDialog({
       onOpenChange(false);
       // Reset optional fields
       setMessage("");
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to submit collaboration request. Please try again.");
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Failed to submit collaboration request. Please try again.";
+      toast.error(errorMessage);
     } finally {
       setSubmitting(false);
     }

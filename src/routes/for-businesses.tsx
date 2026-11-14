@@ -15,13 +15,15 @@ import hero from "@/assets/creator-studio-hero.jpg";
 import { Button } from "@/components/ui/button";
 import {
   CreatorCard,
+  EmptyState,
+  ErrorState,
   Layout,
+  LoadingSkeleton,
   SectionHeading,
   pageMeta,
   emptyDiscover,
   BUSINESS_HUB_URL,
 } from "@/components/marketplace";
-import { creators } from "@/data/marketplace";
 import type { Creator } from "@/types/marketplace";
 import { getMarketplaceCreators } from "@/services/marketplace-api";
 const steps = [
@@ -53,15 +55,34 @@ export const Route = createFileRoute("/for-businesses")({
   component: Business,
 });
 function Business() {
-  const [liveCreators, setLiveCreators] = useState<Creator[]>(creators);
-  useEffect(() => {
+  const [liveCreators, setLiveCreators] = useState<Creator[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadCreators = () => {
     let active = true;
-    getMarketplaceCreators().then((res) => {
-      if (active && res && res.length > 0) setLiveCreators(res.slice(0, 3));
-    });
+    setLoading(true);
+    setError(null);
+    getMarketplaceCreators({ page_size: 3 })
+      .then((res) => {
+        if (active && res) setLiveCreators(res.slice(0, 3));
+      })
+      .catch((err: unknown) => {
+        if (!active) return;
+        const msg = err instanceof Error ? err.message : "Failed to load featured creators.";
+        setError(msg);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
     return () => {
       active = false;
     };
+  };
+
+  useEffect(() => {
+    return loadCreators();
   }, []);
 
   return (
@@ -83,9 +104,7 @@ function Business() {
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <a href={`${BUSINESS_HUB_URL}/signup`}>
-                Create Business Account
-              </a>
+              <a href={`${BUSINESS_HUB_URL}/signup`}>Create Business Account</a>
             </Button>
           </div>
           <div className="mt-8 flex gap-8 text-sm">
@@ -148,11 +167,19 @@ function Business() {
           title="See the people behind the reach"
           copy="Compare fit, creative voice, engagement and location before you make contact."
         />
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {liveCreators.map((c) => (
-            <CreatorCard creator={c} key={c.slug} />
-          ))}
-        </div>
+        {loading ? (
+          <LoadingSkeleton />
+        ) : error ? (
+          <ErrorState message={error} onRetry={loadCreators} />
+        ) : liveCreators.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {liveCreators.map((c) => (
+              <CreatorCard creator={c} key={c.slug} />
+            ))}
+          </div>
+        )}
       </section>
       <section className="page-shell">
         <div className="rounded-xl bg-ink p-10 text-primary-foreground sm:p-14">
@@ -164,9 +191,7 @@ function Business() {
             Find it today with a free business profile.
           </p>
           <Button className="mt-7" variant="secondary" asChild>
-            <a href={`${BUSINESS_HUB_URL}/signup`}>
-              Create Business Account
-            </a>
+            <a href={`${BUSINESS_HUB_URL}/signup`}>Create Business Account</a>
           </Button>
         </div>
       </section>

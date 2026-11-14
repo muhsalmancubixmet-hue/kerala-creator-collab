@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
+  AlertCircle,
   BadgeCheck,
   Bookmark,
   BriefcaseBusiness,
@@ -50,9 +51,12 @@ import {
 } from "@/services/marketplace-api";
 import { CampaignDetailDialog } from "@/components/campaign-dialog";
 
-export const CREATOR_HUB_URL = (import.meta.env['VITE_CREATOR_HUB_URL'] as string | undefined) || "http://localhost:8080";
-export const BUSINESS_HUB_URL = (import.meta.env['VITE_BUSINESS_HUB_URL'] as string | undefined) || "http://localhost:8083";
-export const SITE_URL = (import.meta.env['VITE_SITE_URL'] as string | undefined) || "http://localhost:8082";
+export const CREATOR_HUB_URL =
+  (import.meta.env["VITE_CREATOR_HUB_URL"] as string | undefined) || "http://localhost:8080";
+export const BUSINESS_HUB_URL =
+  (import.meta.env["VITE_BUSINESS_HUB_URL"] as string | undefined) || "http://localhost:8083";
+export const SITE_URL =
+  (import.meta.env["VITE_SITE_URL"] as string | undefined) || "http://localhost:8082";
 
 export const SAVED_STORAGE_KEY = "ic-saved-creators";
 export const SAVED_EVENT = "ic-saved-creators-changed";
@@ -143,7 +147,12 @@ export function SavedCreatorsDrawer() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="sm" className="relative gap-1.5 font-bold" aria-label="Saved creators">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="relative gap-1.5 font-bold"
+          aria-label="Saved creators"
+        >
           <Bookmark className="size-4 text-brand" />
           <span className="hidden sm:inline">Saved</span>
           {savedList.length > 0 && (
@@ -166,11 +175,16 @@ export function SavedCreatorsDrawer() {
               <div className="py-12 text-center text-muted-foreground">
                 <Bookmark className="size-10 mx-auto text-muted-foreground/30 mb-2" />
                 <p className="text-sm font-medium">Your saved list is empty.</p>
-                <p className="text-xs mt-1">Bookmark creators on discover or profile pages to save them here.</p>
+                <p className="text-xs mt-1">
+                  Bookmark creators on discover or profile pages to save them here.
+                </p>
               </div>
             ) : (
               savedList.map((c) => (
-                <div key={c.slug} className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
+                <div
+                  key={c.slug}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-border p-3"
+                >
                   <div className="flex items-center gap-3 min-w-0">
                     <CreatorPortrait creator={c} className="size-11 shrink-0 rounded-full" />
                     <div className="min-w-0">
@@ -187,7 +201,12 @@ export function SavedCreatorsDrawer() {
                       </p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => handleRemove(c.slug)} className="text-xs text-muted-foreground hover:text-destructive">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemove(c.slug)}
+                    className="text-xs text-muted-foreground hover:text-destructive"
+                  >
                     Remove
                   </Button>
                 </div>
@@ -199,9 +218,7 @@ export function SavedCreatorsDrawer() {
         {savedList.length > 0 && (
           <div className="border-t border-border pt-4 mt-4 space-y-2">
             <Button className="w-full" asChild>
-              <a href={`${BUSINESS_HUB_URL}/campaigns/new`}>
-                Post Campaign for Saved Creators
-              </a>
+              <a href={`${BUSINESS_HUB_URL}/campaigns/new`}>Post Campaign for Saved Creators</a>
             </Button>
             <p className="text-center text-[11px] text-muted-foreground">
               Sign into Business Hub to dispatch campaign invitations to all saved creators.
@@ -364,8 +381,7 @@ export function CreatorPortrait({
   className?: string;
   priority?: boolean;
 }) {
-  const photo =
-    (creator as any).photo_url || (creator as any).avatar || (creator as any).profile_photo;
+  const photo = creator.photo_url || creator.sprite;
   if (photo) {
     return (
       <div
@@ -449,7 +465,9 @@ export function CreatorCard({ creator, compact = false }: { creator: Creator; co
   const handleToggleSave = () => {
     const isNowSaved = toggleSavedCreator(creator);
     setSaved(isNowSaved);
-    toast.success(isNowSaved ? `Saved ${creator.name} to shortlist` : `Removed ${creator.name} from saved`);
+    toast.success(
+      isNowSaved ? `Saved ${creator.name} to shortlist` : `Removed ${creator.name} from saved`,
+    );
   };
 
   if (compact)
@@ -959,11 +977,7 @@ export function CampaignCard({ campaign }: { campaign: Campaign }) {
         </div>
       </article>
 
-      <CampaignDetailDialog
-        campaign={campaign}
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-      />
+      <CampaignDetailDialog campaign={campaign} open={dialogOpen} onOpenChange={setDialogOpen} />
     </>
   );
 }
@@ -1190,6 +1204,36 @@ export function LoadingSkeleton() {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+export function ErrorState({
+  title = "Unable to load data",
+  message = "We could not reach the server. Please check your connection and try again.",
+  onRetry,
+}: {
+  title?: string;
+  message?: string;
+  onRetry?: () => void;
+}) {
+  return (
+    <div
+      className="grid min-h-80 place-items-center rounded-lg border border-destructive/20 bg-destructive/5 p-8 text-center"
+      role="alert"
+    >
+      <div>
+        <div className="mx-auto grid size-14 place-items-center rounded-full bg-destructive/10 text-destructive">
+          <AlertCircle className="size-6" />
+        </div>
+        <h3 className="mt-4 font-display text-xl font-bold">{title}</h3>
+        <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">{message}</p>
+        {onRetry && (
+          <Button onClick={onRetry} variant="outline" className="mt-5">
+            Try again
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

@@ -6,11 +6,23 @@ export const API_BASE_URL =
   (typeof import.meta !== "undefined" && (import.meta.env?.["VITE_API_BASE_URL"] as string)) ||
   "http://127.0.0.1:8000/api/v1";
 
+export class ApiError extends Error {
+  status: number;
+  data: unknown;
+
+  constructor(status: number, message: string, data?: unknown) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.data = data;
+  }
+}
+
 export interface ApiRequestOptions extends RequestInit {
   timeoutMs?: number;
 }
 
-export async function apiRequest<T = any>(
+export async function apiRequest<T = unknown>(
   endpoint: string,
   options: ApiRequestOptions = {},
 ): Promise<T> {
@@ -41,11 +53,11 @@ export async function apiRequest<T = any>(
         errorBody?.detail ||
         errorBody?.message ||
         `Server responded with ${response.status} (${response.statusText})`;
-      throw new Error(message);
+      throw new ApiError(response.status, message, errorBody);
     }
 
     return (await response.json()) as T;
-  } catch (err: any) {
+  } catch (err: unknown) {
     clearTimeout(timeoutId);
     throw err;
   }

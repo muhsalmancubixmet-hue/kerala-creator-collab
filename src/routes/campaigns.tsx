@@ -2,8 +2,16 @@ import { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { PlusCircle, Search, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CampaignCard, Layout, pageMeta, BUSINESS_HUB_URL } from "@/components/marketplace";
-import { countries, categories as fallbackCategories } from "@/data/marketplace";
+import {
+  CampaignCard,
+  EmptyState,
+  ErrorState,
+  Layout,
+  LoadingSkeleton,
+  pageMeta,
+  BUSINESS_HUB_URL,
+} from "@/components/marketplace";
+import { countries } from "@/data/marketplace";
 import type { Campaign, Category } from "@/types/marketplace";
 import { getMarketplaceCampaigns, getMarketplaceCategories } from "@/services/marketplace-api";
 
@@ -21,19 +29,23 @@ function Campaigns() {
   const [cat, setCat] = useState("");
   const [country, setCountry] = useState("");
   const [sort, setSort] = useState("new");
-  const [categoriesList, setCategoriesList] = useState<Category[]>(fallbackCategories);
+  const [categoriesList, setCategoriesList] = useState<Category[]>([]);
   const [campaignPool, setCampaignPool] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getMarketplaceCategories().then((res) => {
-      if (res && res.length > 0) setCategoriesList(res);
-    });
+    getMarketplaceCategories()
+      .then((res) => {
+        if (res && res.length > 0) setCategoriesList(res);
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
+    setError(null);
 
     getMarketplaceCampaigns({
       q: q.trim() || undefined,
@@ -43,10 +55,12 @@ function Campaigns() {
     })
       .then((res) => {
         if (!active) return;
-        setCampaignPool(res);
+        setCampaignPool(res || []);
       })
-      .catch((err) => {
-        console.warn("Failed to load campaigns:", err);
+      .catch((err: unknown) => {
+        if (!active) return;
+        const msg = err instanceof Error ? err.message : "Failed to load campaigns.";
+        setError(msg);
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -131,7 +145,16 @@ function Campaigns() {
           </select>
         </div>
 
-        {campaignPool.length === 0 && !loading ? (
+        {loading ? (
+          <LoadingSkeleton />
+        ) : error ? (
+          <ErrorState
+            message={error}
+            onRetry={() => {
+              setSort((prev) => (prev === "new" ? "new " : "new"));
+            }}
+          />
+        ) : campaignPool.length === 0 ? (
           <div className="rounded-lg border border-dashed border-border p-12 text-center text-muted-foreground">
             <h3 className="font-display text-lg font-bold">No campaigns found</h3>
             <p className="mt-1 text-sm">

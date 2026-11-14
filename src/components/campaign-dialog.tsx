@@ -27,7 +27,8 @@ import { Button } from "@/components/ui/button";
 import type { Campaign } from "@/types/marketplace";
 import { campaignBudget, campaignLocation } from "@/data/marketplace";
 
-const CREATOR_HUB_URL = (import.meta.env['VITE_CREATOR_HUB_URL'] as string | undefined) || "http://localhost:8080";
+const CREATOR_HUB_URL =
+  (import.meta.env["VITE_CREATOR_HUB_URL"] as string | undefined) || "http://localhost:8080";
 
 interface CampaignDetailDialogProps {
   campaign: Campaign | null;
@@ -35,11 +36,7 @@ interface CampaignDetailDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function CampaignDetailDialog({
-  campaign,
-  open,
-  onOpenChange,
-}: CampaignDetailDialogProps) {
+export function CampaignDetailDialog({ campaign, open, onOpenChange }: CampaignDetailDialogProps) {
   if (!campaign) return null;
 
   const handleApply = () => {
@@ -76,7 +73,8 @@ export function CampaignDetailDialog({
             {campaign.title}
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            Posted by {campaign.business}. Review brief deliverables and submit your pitch via Creator Hub.
+            Posted by {campaign.business}. Review brief deliverables and submit your pitch via
+            Creator Hub.
           </DialogDescription>
         </DialogHeader>
 
@@ -87,7 +85,8 @@ export function CampaignDetailDialog({
               Campaign Objective
             </h4>
             <p className="mt-2 text-sm leading-relaxed text-foreground">
-              {campaign.description || "Looking for credible creators to produce high-impact regional content."}
+              {campaign.description ||
+                "Looking for credible creators to produce high-impact regional content."}
             </p>
           </div>
 
@@ -143,7 +142,8 @@ export function CampaignDetailDialog({
                 <CheckCircle2 className="size-3 text-success" /> Usage Rights: 6 Months Digital
               </span>
               <span className="inline-flex items-center gap-1 rounded bg-secondary px-2.5 py-1">
-                <CheckCircle2 className="size-3 text-success" /> Platform: {campaign.platform || "Instagram"}
+                <CheckCircle2 className="size-3 text-success" /> Platform:{" "}
+                {campaign.platform || "Instagram"}
               </span>
             </div>
           </div>

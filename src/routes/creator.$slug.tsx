@@ -117,8 +117,9 @@ function Profile() {
       setMediaKitOpen(false);
       setRequesterName("");
       setRequesterEmail("");
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to dispatch media kit request.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to dispatch media kit request.";
+      toast.error(msg);
     } finally {
       setRequestingKit(false);
     }
@@ -248,9 +249,7 @@ function Profile() {
                   <span className="block text-xs text-muted-foreground">Engagement</span>
                 </div>
                 <div className="col-span-2 mt-3 sm:col-span-1 sm:mt-0">
-                  <strong className="font-display text-2xl">
-                    {(c as any).topAudience || "Kerala"}
-                  </strong>
+                  <strong className="font-display text-2xl">{c.topAudience || "Kerala"}</strong>
                   <span className="block text-xs text-muted-foreground">Primary Audience</span>
                 </div>
               </div>
@@ -282,8 +281,13 @@ function Profile() {
                 >
                   Contact
                 </Button>
-                <Button size="lg" variant={saved ? "secondary" : "ghost"} onClick={handleToggleSave}>
-                  <Bookmark className={saved ? "fill-brand text-brand" : ""} /> {saved ? "Saved" : "Save"}
+                <Button
+                  size="lg"
+                  variant={saved ? "secondary" : "ghost"}
+                  onClick={handleToggleSave}
+                >
+                  <Bookmark className={saved ? "fill-brand text-brand" : ""} />{" "}
+                  {saved ? "Saved" : "Save"}
                 </Button>
               </div>
             </div>
@@ -468,13 +472,16 @@ function Profile() {
               Request {c.name}'s Media Kit
             </DialogTitle>
             <DialogDescription>
-              We'll send the latest verified analytics, past campaign metrics, and rate cards to your email.
+              We'll send the latest verified analytics, past campaign metrics, and rate cards to
+              your email.
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleMediaKitSubmit} className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase text-muted-foreground">Your Name *</label>
+              <label className="text-xs font-bold uppercase text-muted-foreground">
+                Your Name *
+              </label>
               <input
                 required
                 className="field"
@@ -484,7 +491,9 @@ function Profile() {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase text-muted-foreground">Work Email *</label>
+              <label className="text-xs font-bold uppercase text-muted-foreground">
+                Work Email *
+              </label>
               <input
                 required
                 type="email"

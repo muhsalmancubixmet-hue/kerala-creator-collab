@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import {
   CampaignCard,
   CreatorCard,
+  EmptyState,
+  ErrorState,
   Layout,
   LoadingSkeleton,
   SearchBar,
@@ -14,12 +16,12 @@ import {
   emptyDiscover,
   CREATOR_HUB_URL,
 } from "@/components/marketplace";
-import { countries, places, categories as fallbackCategories } from "@/data/marketplace";
-import type { Creator, Campaign, Category } from "@/types/marketplace";
+import type { Creator, Campaign, Category, Place } from "@/types/marketplace";
 import {
   getMarketplaceCampaigns,
   getMarketplaceCreators,
   getMarketplaceCategories,
+  getMarketplaceLocations,
 } from "@/services/marketplace-api";
 
 export const Route = createFileRoute("/")({
@@ -34,25 +36,33 @@ export const Route = createFileRoute("/")({
 function Home() {
   const [liveCreators, setLiveCreators] = useState<Creator[]>([]);
   const [liveCampaigns, setLiveCampaigns] = useState<Campaign[]>([]);
-  const [liveCategories, setLiveCategories] = useState<Category[]>(fallbackCategories);
+  const [liveCategories, setLiveCategories] = useState<Category[]>([]);
+  const [livePlaces, setLivePlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const loadData = () => {
     let active = true;
+    setLoading(true);
+    setError(null);
 
     Promise.all([
       getMarketplaceCreators({ page_size: 8 }),
       getMarketplaceCampaigns(),
       getMarketplaceCategories(),
+      getMarketplaceLocations(),
     ])
-      .then(([creatorsRes, campaignsRes, categoriesRes]) => {
+      .then(([creatorsRes, campaignsRes, categoriesRes, placesRes]) => {
         if (!active) return;
-        if (creatorsRes && creatorsRes.length > 0) setLiveCreators(creatorsRes);
-        if (campaignsRes && campaignsRes.length > 0) setLiveCampaigns(campaignsRes);
-        if (categoriesRes && categoriesRes.length > 0) setLiveCategories(categoriesRes);
+        setLiveCreators(creatorsRes || []);
+        setLiveCampaigns(campaignsRes || []);
+        setLiveCategories(categoriesRes || []);
+        setLivePlaces(placesRes || []);
       })
-      .catch((err) => {
-        console.warn("Home data initialization warning:", err);
+      .catch((err: unknown) => {
+        if (!active) return;
+        const msg = err instanceof Error ? err.message : "Failed to connect to the backend server.";
+        setError(msg);
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -61,6 +71,10 @@ function Home() {
     return () => {
       active = false;
     };
+  };
+
+  useEffect(() => {
+    return loadData();
   }, []);
 
   return (
@@ -127,8 +141,12 @@ function Home() {
             </Button>
           }
         />
-        {loading && liveCreators.length === 0 ? (
+        {loading ? (
           <LoadingSkeleton />
+        ) : error ? (
+          <ErrorState message={error} onRetry={loadData} />
+        ) : liveCreators.length === 0 ? (
+          <EmptyState />
         ) : (
           <div className="-mx-4 flex snap-x gap-5 overflow-x-auto px-4 pb-6 sm:mx-0 sm:grid sm:grid-cols-2 sm:px-0 lg:grid-cols-4">
             {liveCreators.slice(0, 4).map((c) => (
@@ -147,27 +165,35 @@ function Home() {
             title="Every kind of influence"
             copy="From home kitchens to gaming rooms, discover creators your audience already trusts."
           />
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            {liveCategories.slice(0, 10).map((c, i) => (
-              <Link
-                key={c.name}
-                to="/discover"
-                search={{ ...emptyDiscover, category: c.name }}
-                className="group rounded-lg border border-border bg-background p-4 transition hover:-translate-y-1 hover:shadow-elevated"
-              >
-                <div className="mb-7 flex items-center justify-between">
-                  <span className="grid size-9 place-items-center rounded-full bg-brand-soft text-sm font-extrabold text-brand">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <ArrowRight className="size-4 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-brand" />
-                </div>
-                <h3 className="font-display font-bold">{c.name}</h3>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {c.creator_count ?? 10} creators
-                </p>
-              </Link>
-            ))}
-          </div>
+          {loading ? (
+            <LoadingSkeleton />
+          ) : error ? (
+            <ErrorState message={error} onRetry={loadData} />
+          ) : liveCategories.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">No categories available.</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+              {liveCategories.slice(0, 10).map((c, i) => (
+                <Link
+                  key={c.name}
+                  to="/discover"
+                  search={{ ...emptyDiscover, category: c.name }}
+                  className="group rounded-lg border border-border bg-background p-4 transition hover:-translate-y-1 hover:shadow-elevated"
+                >
+                  <div className="mb-7 flex items-center justify-between">
+                    <span className="grid size-9 place-items-center rounded-full bg-brand-soft text-sm font-extrabold text-brand">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <ArrowRight className="size-4 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-brand" />
+                  </div>
+                  <h3 className="font-display font-bold">{c.name}</h3>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {c.creator_count ?? 0} creators
+                  </p>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -180,7 +206,7 @@ function Home() {
         <div className="grid overflow-hidden rounded-xl bg-ink text-primary-foreground md:grid-cols-[1.1fr_.9fr]">
           <div className="p-7 sm:p-10">
             <div className="flex flex-wrap gap-2">
-              {places.map((p, i) => (
+              {livePlaces.slice(0, 10).map((p, i) => (
                 <Link
                   key={p.id}
                   to="/discover"
@@ -195,7 +221,9 @@ function Home() {
           </div>
           <div className="flex min-h-72 items-end bg-gradient-to-br from-brand via-brand to-success p-8">
             <div>
-              <p className="font-display text-5xl font-extrabold">{countries.length}+ countries</p>
+              <p className="font-display text-5xl font-extrabold">
+                {new Set(livePlaces.map((p) => p.countryCode)).size || 5}+ countries
+              </p>
               <p className="mt-2 max-w-xs text-sm text-primary-foreground/80">
                 Any city, any language, any platform. One place to find the right match.
               </p>
@@ -219,11 +247,21 @@ function Home() {
             </Button>
           }
         />
-        <div className="grid gap-5 md:grid-cols-3">
-          {liveCampaigns.slice(0, 3).map((c) => (
-            <CampaignCard key={c.id} campaign={c} />
-          ))}
-        </div>
+        {loading ? (
+          <LoadingSkeleton />
+        ) : error ? (
+          <ErrorState message={error} onRetry={loadData} />
+        ) : liveCampaigns.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-border p-8 text-center text-muted-foreground">
+            No open campaigns at the moment.
+          </div>
+        ) : (
+          <div className="grid gap-5 md:grid-cols-3">
+            {liveCampaigns.slice(0, 3).map((c) => (
+              <CampaignCard key={c.id} campaign={c} />
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="page-shell py-20">

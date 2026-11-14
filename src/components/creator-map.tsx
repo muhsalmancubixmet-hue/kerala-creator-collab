@@ -127,4 +127,3 @@ export function CreatorMap({ items, center, radiusKm, className }: Props) {
     />
   );
 }
-

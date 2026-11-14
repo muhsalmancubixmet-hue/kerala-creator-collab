@@ -13,12 +13,14 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   CreatorPortrait,
+  EmptyState,
+  ErrorState,
   Layout,
+  LoadingSkeleton,
   SectionHeading,
   pageMeta,
   CREATOR_HUB_URL,
 } from "@/components/marketplace";
-import { creators } from "@/data/marketplace";
 import type { Creator } from "@/types/marketplace";
 import { getMarketplaceCreators } from "@/services/marketplace-api";
 const benefits = [
@@ -62,18 +64,36 @@ export const Route = createFileRoute("/for-influencers")({
   component: Influencers,
 });
 function Influencers() {
-  const [featured, setFeatured] = useState<Creator>((creators[2] ?? creators[0])!);
+  const [featured, setFeatured] = useState<Creator | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const loadCreator = () => {
     let active = true;
-    getMarketplaceCreators().then((res) => {
-      if (active && res && res.length > 0 && res[0]) {
-        setFeatured(res[0]);
-      }
-    });
+    setLoading(true);
+    setError(null);
+    getMarketplaceCreators({ page_size: 1 })
+      .then((res) => {
+        if (active && res && res.length > 0 && res[0]) {
+          setFeatured(res[0]);
+        }
+      })
+      .catch((err: unknown) => {
+        if (!active) return;
+        const msg = err instanceof Error ? err.message : "Failed to load featured creator.";
+        setError(msg);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
     return () => {
       active = false;
     };
+  };
+
+  useEffect(() => {
+    return loadCreator();
   }, []);
 
   const c = featured;
@@ -101,34 +121,50 @@ function Influencers() {
             </p>
           </div>
           <div className="relative mx-auto w-full max-w-2xl pb-10">
-            <div className="overflow-hidden rounded-xl border border-border bg-background shadow-elevated">
-              <div className="grid grid-cols-[100px_1fr] gap-4 p-5">
-                <CreatorPortrait creator={c} className="aspect-square rounded-full" />
-                <div>
-                  <div className="flex items-center gap-1 font-display text-xl font-bold">
-                    {c.name}
-                    {c.verified && (
-                      <BadgeCheck className="size-4 fill-brand text-primary-foreground" />
-                    )}
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {c.category} creator · {c.city || c.location?.city || "Kerala"}
-                  </p>
-                  <div className="mt-4 flex gap-5 text-xs">
-                    <span>
-                      <strong className="block text-base">{c.followersLabel || "0"}</strong>
-                      Followers
-                    </span>
-                    <span>
-                      <strong className="block text-base">
-                        {c.engagement ? `${c.engagement}%` : "0.0%"}
-                      </strong>
-                      Engagement
-                    </span>
+            {loading ? (
+              <div className="overflow-hidden rounded-xl border border-border bg-background p-6 shadow-elevated">
+                <div className="flex gap-4">
+                  <div className="size-20 rounded-full animate-pulse bg-muted" />
+                  <div className="flex-1 space-y-3">
+                    <div className="h-5 w-1/3 animate-pulse rounded bg-muted" />
+                    <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
                   </div>
                 </div>
               </div>
-            </div>
+            ) : error ? (
+              <ErrorState message={error} onRetry={loadCreator} />
+            ) : c ? (
+              <div className="overflow-hidden rounded-xl border border-border bg-background shadow-elevated">
+                <div className="grid grid-cols-[100px_1fr] gap-4 p-5">
+                  <CreatorPortrait creator={c} className="aspect-square rounded-full" />
+                  <div>
+                    <div className="flex items-center gap-1 font-display text-xl font-bold">
+                      {c.name}
+                      {c.verified && (
+                        <BadgeCheck className="size-4 fill-brand text-primary-foreground" />
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {c.category} creator · {c.city || c.location?.city || "Kerala"}
+                    </p>
+                    <div className="mt-4 flex gap-5 text-xs">
+                      <span>
+                        <strong className="block text-base">{c.followersLabel || "0"}</strong>
+                        Followers
+                      </span>
+                      <span>
+                        <strong className="block text-base">
+                          {c.engagement ? `${c.engagement}%` : "0.0%"}
+                        </strong>
+                        Engagement
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <EmptyState />
+            )}
             <div className="absolute -bottom-1 -left-3 rounded-lg bg-ink p-4 text-primary-foreground shadow-elevated">
               <Sparkles className="size-4 text-brand" />
               <p className="mt-2 text-sm font-bold">

@@ -8,6 +8,7 @@ import {
   Columns2,
   CreatorGrid,
   EmptyState,
+  ErrorState,
   FilterPanel,
   Grid2X2,
   Layout,
@@ -68,6 +69,7 @@ function Discover() {
   const [hasMore, setHasMore] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
   const [creatorPool, setCreatorPool] = useState<Creator[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const place = placeById(s.location);
 
@@ -76,6 +78,7 @@ function Discover() {
     setMounted(true);
     let active = true;
     setLoading(true);
+    setError(null);
     setPage(1);
 
     getMarketplacePaginatedCreators({
@@ -98,12 +101,17 @@ function Discover() {
     })
       .then((res) => {
         if (!active) return;
-        setCreatorPool(res.results);
-        setTotalCount(res.count);
+        setCreatorPool(res.results || []);
+        setTotalCount(res.count || 0);
         setHasMore(Boolean(res.next));
       })
-      .catch((err) => {
-        console.warn("Failed to query public creators:", err);
+      .catch((err: unknown) => {
+        if (!active) return;
+        const msg = err instanceof Error ? err.message : "Failed to query public creators.";
+        setError(msg);
+        setCreatorPool([]);
+        setTotalCount(0);
+        setHasMore(false);
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -196,6 +204,13 @@ function Discover() {
 
   const resultsContent = loading ? (
     <LoadingSkeleton />
+  ) : error ? (
+    <ErrorState
+      message={error}
+      onRetry={() => {
+        setPage(1);
+      }}
+    />
   ) : creatorPool.length > 0 ? (
     <CreatorGrid items={creatorPool} compact={compact || s.view === "split"} />
   ) : (

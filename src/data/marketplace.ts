@@ -12,15 +12,7 @@ import type {
   Category,
 } from "@/types/marketplace";
 
-export type {
-  Creator,
-  Service,
-  PortfolioItem,
-  Campaign,
-  Place,
-  Testimonial,
-  Category,
-};
+export type { Creator, Service, PortfolioItem, Campaign, Place, Testimonial, Category };
 
 /* ------------------------------------------------------------------
  * Platform configuration — global and data-driven.
@@ -28,38 +20,16 @@ export type {
  * Manager API. Components must read from here, never hardcode.
  * ------------------------------------------------------------------ */
 
-export type Currency = { code: string; symbol: string; locale: string };
-export const currencies: Record<string, Currency> = {
-  USD: { code: "USD", symbol: "$", locale: "en-US" },
-  EUR: { code: "EUR", symbol: "€", locale: "de-DE" },
-  GBP: { code: "GBP", symbol: "£", locale: "en-GB" },
-  AED: { code: "AED", symbol: "AED", locale: "en-AE" },
-  INR: { code: "INR", symbol: "₹", locale: "en-IN" },
-  CAD: { code: "CAD", symbol: "CA$", locale: "en-CA" },
-  AUD: { code: "AUD", symbol: "A$", locale: "en-AU" },
-  SAR: { code: "SAR", symbol: "SAR", locale: "en-SA" },
-  SGD: { code: "SGD", symbol: "S$", locale: "en-SG" },
-};
-export const defaultCurrency = "USD";
-
-export const formatMoney = (
-  amount: number | null,
-  currency: string = defaultCurrency,
-  compact = false,
-) => {
-  if (amount == null) return "Contact for price";
-  const cfg = currencies[currency] ?? currencies[defaultCurrency]!;
-  return new Intl.NumberFormat(cfg.locale, {
-    style: "currency",
-    currency: cfg.code,
-    maximumFractionDigits: 0,
-    notation: compact ? "compact" : "standard",
-  }).format(amount);
-};
-export const formatRange = (min: number, max: number | null, currency: string) =>
-  max == null
-    ? `From ${formatMoney(min, currency, true)}`
-    : `${formatMoney(min, currency, true)}–${formatMoney(max, currency, true)}`;
+export type { Currency } from "@/lib/formatters";
+import {
+  currencies,
+  defaultCurrency,
+  formatMoney,
+  formatRange,
+  formatFollowers,
+  cleanHandle,
+} from "@/lib/formatters";
+export { currencies, defaultCurrency, formatMoney, formatRange, formatFollowers, cleanHandle };
 
 export const languages = [
   "English",
@@ -92,7 +62,6 @@ export const platforms = [
  * Country → (Region) → (District) → City → (Area). Only country and
  * city are required so any administrative structure fits.
  * ------------------------------------------------------------------ */
-
 
 export const places: Place[] = [
   {
@@ -279,7 +248,6 @@ export const distanceKm = (a: { lat: number; lng: number }, b: { lat: number; ln
  * Demo data. Kerala is one sample market among several.
  * ------------------------------------------------------------------ */
 
-
 const services = (reel: number, story: number): Service[] => [
   {
     name: "Brand reel",
@@ -348,20 +316,14 @@ const build = (s: Seed): Creator => {
     collaborations: ["Nila Foods", "Fernway Stays", "Sahra Atelier"],
     testimonials: [
       {
-        quote: "They understood the brief and turned it into a story people genuinely saved and shared.",
+        quote:
+          "They understood the brief and turned it into a story people genuinely saved and shared.",
         person: "Anjali Rao",
         role: "Brand Lead, Nila Foods",
       },
     ],
   };
 };
-
-export const formatFollowers = (value: number) =>
-  value >= 1000000
-    ? `${(value / 1000000).toFixed(1)}M`
-    : value >= 1000
-      ? `${Math.round(value / 1000)}K`
-      : `${value}`;
 
 export const creators: Creator[] = (
   [

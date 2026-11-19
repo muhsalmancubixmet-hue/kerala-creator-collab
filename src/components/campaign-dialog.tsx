@@ -26,9 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import type { Campaign } from "@/types/marketplace";
 import { campaignBudget, campaignLocation } from "@/data/marketplace";
-
-const CREATOR_HUB_URL =
-  (import.meta.env["VITE_CREATOR_HUB_URL"] as string | undefined) || "http://localhost:8080";
+import { CREATOR_HUB_URL } from "@/components/marketplace";
 
 interface CampaignDetailDialogProps {
   campaign: Campaign | null;

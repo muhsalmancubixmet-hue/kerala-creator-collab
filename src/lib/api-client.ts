@@ -2,9 +2,18 @@
  * Master API client for Influencers.com Public Marketplace.
  * Connects to Django REST Framework backend (/api/v1/...).
  */
-export const API_BASE_URL =
-  (typeof import.meta !== "undefined" && (import.meta.env?.["VITE_API_BASE_URL"] as string)) ||
-  "http://127.0.0.1:8000/api/v1";
+const resolveApiBase = (): string => {
+  let base =
+    (typeof import.meta !== "undefined" && (import.meta.env?.["VITE_API_BASE_URL"] as string)) ||
+    "http://127.0.0.1:8000/api/v1";
+  base = base.trim().replace(/\/+$/, "");
+  if (!base.endsWith("/api/v1")) {
+    base = `${base}/api/v1`;
+  }
+  return base;
+};
+
+export const API_BASE_URL = resolveApiBase();
 
 export class ApiError extends Error {
   status: number;

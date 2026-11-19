@@ -51,12 +51,23 @@ import {
 } from "@/services/marketplace-api";
 import { CampaignDetailDialog } from "@/components/campaign-dialog";
 
-export const CREATOR_HUB_URL =
-  (import.meta.env["VITE_CREATOR_HUB_URL"] as string | undefined) || "http://localhost:8080";
-export const BUSINESS_HUB_URL =
-  (import.meta.env["VITE_BUSINESS_HUB_URL"] as string | undefined) || "http://localhost:8083";
-export const SITE_URL =
-  (import.meta.env["VITE_SITE_URL"] as string | undefined) || "http://localhost:8082";
+const normalizePortalUrl = (url: string | undefined, fallback: string): string => {
+  const target = (url && url.trim()) || fallback;
+  return target.replace(/\/+$/, "");
+};
+
+export const CREATOR_HUB_URL = normalizePortalUrl(
+  import.meta.env["VITE_CREATOR_HUB_URL"] as string | undefined,
+  "http://localhost:8080"
+);
+export const BUSINESS_HUB_URL = normalizePortalUrl(
+  import.meta.env["VITE_BUSINESS_HUB_URL"] as string | undefined,
+  "http://localhost:8083"
+);
+export const SITE_URL = normalizePortalUrl(
+  import.meta.env["VITE_SITE_URL"] as string | undefined,
+  "http://localhost:8082"
+);
 
 export const SAVED_STORAGE_KEY = "ic-saved-creators";
 export const SAVED_EVENT = "ic-saved-creators-changed";
